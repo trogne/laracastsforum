@@ -1,0 +1,623 @@
+sudo apt remove xvfb chromium-browser
+######################
+
+laravel new forum
+
+pstorm . 
+    NO PHPSTORM!
+
+
+php artisan make:model Thread -mr
+    migration + resourceful controller
+    
+
+//mysql -uhomestead -p
+//    pass=secret
+
+mysql -uroot -p
+    pass=root
+mysql -uroot --password=root
+
+create database forum;
+
+
+
+php artisan make:model Reply -mc
+    migration + controller (but not a resource controller)
+
+php artisan tinker
+    factory('App\Thread',50)->create()   //make() = not persist
+
+ALTER TABLE users AUTO_INCREMENT = 1
+OU:
+
+php artisan migrate:refresh
+
+php artisan tinker
+    $threads = factory('App\Thread',50)->create()
+    $threads->each(function ($thread) { factory('App\Reply', 10)->create(['thread_id' => $thread->id]); })
+        //Il crée nouveau users encore, ah OK c'est pour reply de different users...
+
+    alors NON : ...create(['thread_id' => $thread->id, 'user_id' => $thread->user_id]); });
+
+$threads->each(
+    function($thread) { 
+        factory('App\Reply', 10)->create([
+                'thread_id' => $thread->id, 
+                'user_id' => $thread->user_id
+            ]); 
+    }
+);
+
+
+
+02-Test-Driving-Threads
+
+tests/Feature/ThreadTest.php
+    
+phpunit.xml
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>   //COOOOOOLLL!!!
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_DRIVER" value="sync"/>
+    </php>
+
+
+
+auth specific scaffolding : 
+    php artisan make:auth
+        steal home.blade.php  (put into threads/index.blade.php)
+
+
+php artisan make:test ReplyTest --unit
+
+phpunit tests/unit/ReplyTest.php
+
+phpunit --filter a_thread_has_a_creator
+phpunit --filter ThreadTest
+        
+php artisan make:test ParticipateInForumTest
+
+
+Laravel Dusk to physically open the browser and fill out the form...
+    (or package "Laravel BrowserKit Testing"...)
+
+https://laravel.com/docs/5.5/dusk
+    Browser Tests (Laravel Dusk)
+
+dusk... OK!  chrome headless...
+    https://github.com/laravel/dusk/issues/50
+
+
+\app\Exceptions\Handler.php
+        public function render($request, Exception $exception)
+        {
+            if (app()->environment() === 'testing') throw $exception;
+            return parent::render($request, $exception);
+        }
+
+phpunit
+    ...NotFoundHttpException
+    
+
+besoin /** @test */ si fonction commence pas par "test"
+
+class aliases - Auth:: :
+    config\app.php
+        'Auth' => Illuminate\Support\Facades\Auth::class,
+
+core class aliases - auth() :
+    Illuminate\Foundation\Application.php
+        'auth'                 => [\Illuminate\Auth\AuthManager::class, \Illuminate\Contracts\Auth\Factory::class],
+
+
+
+06-A-User-Can-Publish-Threads
+
+php artisan make:test CreateThreadsTest
+
+php artisan tinker
+    factory('App\User')->make() //laravel object instance
+    factory('App\User')->raw() // raw array of values
+
+
+
+07-Lets-Make-Some-Testing-Helpers
+
+composer dump-autoload
+
+phpunit --filter CreateThreadsTest
+
+
+
+php artisan make:test Footest
+
+phpstorm, live templates...  $CLASS$ = "filename without extention"... COOL...
+
+
+
+08-The-Exception-Handling-Conundrum
+
+Handler.php :
+
+    public function render($request, Exception $exception)
+    {
+        // if (app()->environment() === 'testing') throw $exception;
+        return parent::render($request, $exception);
+    }
+
+
+phpunit --filter guests_cannot_see_the_create_thread_page
+
+
+In some cases we actually do not want to throw the exception
+
+
+
+adamwathan
+https://gist.github.com/viralsolani/57341bd32048fec4e11bd90988ee6322
+
+
+
+
+09-A-Threads-Should-Be-Assigned-A-Channel
+
+php artisan make:model Channel -m
+
+
+***
+dd(get_class(static::$app)); // "Illuminate\Foundation\Application"
+***
+
+
+php artisan migrate:refresh
+    //for local env (not for our tests)
+
+
+php artisan tinker
+
+factory('App\Thread', 50)->create();
+
+
+factory est un helper, comme app : 
+    Illuminate\Foundation\helpers.php
+
+
+
+sudo vi /home/vagrant/.bash_aliases
+    alias p='phpunit'
+    alias pf='phpunit --filter'
+source /home/vagrant/.bash_aliases
+
+
+
+13-Extracting-to-View-Composers
+
+app\Providers\AppServiceProvider.php
+
+
+php artisan make:provider ViewServiceProvider
+
+
+
+
+15-A-Lesson-in-Refactoring
+
+query object = fancy term for a class that has a name that corresponds to a query
+
+
+
+
+test passing... then refactor state... not need tests for "refactoring" classes...
+
+
+
+
+
+
+18-A-User-Can-Favorite-Any-Reply
+
+art make:controller FavoritesController
+
+art make:migration create_favorites_table --create=favorites
+
+art make:model Favorite
+
+
+
+20-From-56-Queries-Down-to-Two
+
+composer require barryvdh/laravel-debugbar
+
+
+config/app.php
+    Barryvdh\Debugbar\ServiceProvider::class,
+But only necessary for local development, so :
+
+AppServiceProvider.php :
+
+    public function register()
+    {
+        if($this->app->isLocal()){
+            $this->app->register(\Barryvdh\Debugbar\ServiceProvider::class);
+        }
+    }
+    
+
+.env
+    DEBUGBAR_ENABLED=false
+NON!!!!!
+
+5.5 and later:
+https://stackoverflow.com/questions/46848732/i-cant-turn-off-debug-bar-in-laravel-on-production?rq=1
+
+
+
+
+"extra": {
+    "laravel": {
+        "dont-discover": [
+            "laravel/dusk",
+            "barryvdh/laravel-debugbar"
+        ]
+    }
+},  
+
+discover feature : .env APP_ENV NOT CONSIDERED
+DISABLE with "dont-discover", then OK ...
+
+
+composer install --no-dev
+
+composer remove laravel/dusk --dev
+
+composer install
+
+
+composer require laravel/dusk:^2.0 --dev
+
+
+
+***************
+$user = User::find($user_id);
+Auth::login($user);
+Auth::login($user, true);  //true = "remember me" cookie.
+Auth::loginUsingId(1)
+
+Auth::user()
+
+Auth::attempt(['email' => 'patrick.fiset@gmail.com', 'password' => 'corpse'])
+    if authentication successful : Auth::attempt() will call Auth::login() 
+
+    
+
+OU:
+$this->actingAs($user);
+$this->be($user);
+
+
+Auth::guest();
+
+
+Auth::user()->name
+auth()->user()->name
+
+
+************************
+
+art tinker
+
+App\Reply::first()
+App\Reply::first()->owner;
+App\Reply::first()->favorites;
+
+
+App\Reply::find(3)->isFavorited();
+Auth::logout();
+
+
+App\Thread::latest()->first()->replies;
+
+App\Thread::find(53)->replies;
+
+App\Thread::find(53)->replies->first()->owner
+
+
+
+could use the boot method and add a global scope...
+disable global scopes for certain queriesééé
+
+User::withoutGlobalScope(AgeScope::class)->get();
+
+
+User::withoutGlobalScope('age')->get(); //defined the global scope using a Closure
+
+return $this->belongsTo('App\Post')->withoutGlobalScope(ScopeClass::class);
+
+//return $thread->get();
+return $thread->withoutGlobalScope('replyCount')->get();;
+
+
+
+
+reply model:
+    protected $with = ['owner'];
+
+App\Reply::first();
+    now with owner
+
+
+
+one option... could also use redis (?)... 
+could also create a more extended sql query where you left join the favorites, and then as part of the sql query you can calculate if the current user favorited it
+
+
+
+App\Thread::withoutGlobalScope('creator')->withoutGlobalScope('replyCount')->first()
+
+
+
+
+22-A-User-Has-A-Profile
+
+art make:controller ProfilesController
+
+
+
+
+dd($request->headers->get('accept'));
+
+dd($response->status());
+
+
+
+24-Authorization-with-Policies
+
+dedicated policy object
+
+art make:policy ThreadPolicy --model=Thread
+    --model to have boilerplate
+
+
+app/Providers/AuthServiceProvider.php
+    protected $policies = [
+        ////'App\Model' => 'App\Policies\ModelPolicy',
+        'App\Thread' => 'App\Policies\ThreadPolicy',
+    ];    
+
+
+
+25-How-to-Construct-An-Activity-Feed-with-TDD
+
+art make:model Activity -m
+
+
+
+
+29-Flash-Messaging-With-Vue
+
+npm install
+    (installs devDependencies, likes vue)
+
+
+resources/assets/js/app.js
+
+    Vue.component('example', require('./components/Example.vue'));
+
+    const app = new Vue({
+        el: '#app'
+    });
+
+
+sudo npm i -g npm@latest
+
+***ON WINDOWS*** : 
+npm install
+npm run dev
+
+
+npm run watch
+
+
+
+
+
+
+console:
+
+$vm0.show = true
+
+ou $vm
+
+
+
+art tinker
+
+$f = App\Favorite::latest()->first()
+
+$f->favorited();
+    => Illuminate\Database\Eloquent\Relations\MorphTo {#766}
+$f->favorited;
+    => App\Reply {#802
+
+
+
+factory('App\Reply', 20)->create(['thread_id' => 6])
+
+
+
+
+31-Authorized-Users-Can-Delete-Replies
+
+art make:policy ReplyPolicy
+
+
+
+33-Ajaxifying-the-Delete-Reply-Button
+
+bootstrap.js : 
+    let token = document.head.querySelector('meta[name="csrf-token"]');
+
+    if (token) {
+        window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.content;
+
+
+
+
+factory('App\Reply', 5)->create(['thread_id' => 91])
+
+
+
+38-Laravel-and-Vue-Pagination
+
+Moment.js
+    sort of like Carbon for javascript
+
+
+npm install moment --save
+
+
+
+http://jsfiddle.net/janfoeh/2SCbv/24
+
+first param : state object,  second = title (no effect),  third = url append
+
+history.pushState( { selectedColor: 'green' }, null, 'miko'); 
+history.replaceState
+
+window.onpopstate = function(event) {
+    console.log("location: " + document.location + ", state: " + JSON.stringify(event.state));
+};
+
+
+
+39-A-User-Can-Filter-By-Unanswered-Threads
+
+create_threads_table
+        $table->unsignedInteger('replies_count')->default(0);
+
+art migrate:refresh
+
+
+art tinker
+
+factory('App\Thread', 30)->create()
+
+
+
+art tinker
+
+
+factory('App\Reply', 30)->create(['thread_id' = App\Thread::latest()->first()->id]);
+
+
+
+art make:model ThreadSubscription -m
+
+
+
+$t = App\Thread::orderBy('created_at', 'desc')->first();
+$t = App\Thread::orderByRaw('updated_at - created_at DESC')->first();
+OU
+$t = App\Thread::latest()->first();
+
+$t->subscribe(2)
+$t->unsubscribe(2)
+
+
+
+41-Thread-Subscriptions-Part-2
+
+art make:controller ThreadSubscriptionsController
+
+
+
+42-Thread-Subscriptions-Part-3
+
+art migrate:rollback
+    "Rollback the last database migration"
+    Rolling back: 2018_06_30_095021_create_thread_subscriptions_table
+    Rolled back:  2018_06_30_095021_create_thread_subscriptions_table
+
+art migrate
+    Migrating: 2018_06_30_095021_create_thread_subscriptions_table
+    Migrated:  2018_06_30_095021_create_thread_subscriptions_table
+
+
+chrome dev : select vue, then <SubscribeButton>
+$vm0.active = false;
+$vm0.active = true;
+
+
+
+
+43-Thread-Subscriptions-Part-4
+
+art notifications:table
+art migrate
+
+art make:notification ThreadWasUpdated
+
+art make:test NotificationsTest
+
+
+
+44-Test-Refactoring
+
+
+
+trait HasDatabaseNotifications
+{
+    /**
+     * Get the entity's notifications.
+     */
+    public function notifications()
+    {
+        return $this->morphMany(DatabaseNotification::class, 'notifiable')
+                            ->orderBy('created_at', 'desc');
+    }
+
+
+\vendor\laravel\framework\src\Illuminate\Notifications\DatabaseNotification.php
+    class DatabaseNotification extends Model
+
+
+
+art tinker
+
+App\User::first()->notify(new App\Notifications\ThreadWasUpdated(App\Thread::first(), App\Reply::first()));
+
+
+
+
+git add .
+git commit --amend
+
+git push -f
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
