@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ThreadsTest extends TestCase
+class ReadThreadsTest extends TestCase
 {
     use RefreshDatabase; //encompasses either situations : use DatabaseMigrations ET use DatabaseTransactions
 
@@ -90,7 +90,9 @@ class ThreadsTest extends TestCase
         $response = $this->getJson('threads?popular=1')->json();
 
         //dd(array_column($response, 'replies_count')); //dd(array_keys($response[0]));
-        $this->assertEquals([3,2,0], array_column($response, 'replies_count'));
+        //$this->assertEquals([3,2,0], array_column($response, 'replies_count'));
+        //dd(print_r($response)); //array([current_page]=>1 [data] => Array (...
+        $this->assertEquals([3,2,0], array_column($response['data'], 'replies_count')); //extract data from pagination object
     }
 
     /** @test */
@@ -102,7 +104,7 @@ class ThreadsTest extends TestCase
         
         $response = $this->getJson('threads?unanswered=1')->json();
         
-        $this->assertCount(1, $response);
+        $this->assertCount(1, $response['data']);
     }
     
     /** @test */
@@ -112,9 +114,24 @@ class ThreadsTest extends TestCase
         create('App\Reply', ['thread_id' => $thread->id], 2);
         
         //$response = $this->get($thread->path() . '/replies');
+        //$response = $this->json('get', $thread->path() . '/replies')->json();
         $response = $this->getJson($thread->path() . '/replies')->json(); //ou get
-
+    
         $this->assertCount(2, $response['data']);
         $this->assertEquals(2, $response['total']);
+    }
+    
+    /** @test */
+    function we_record_a_new_visit_each_time_the_thread_is_read()
+    {
+        $thread = create('App\Thread');
+        
+        //dd($thread->fresh()->toArray()); //need fresh to get all data (like default value for visits), not only factory data.   Determine default values from mysql and bind that to the model
+        //$this->assertSame(0, (int)$thread->fresh()->visits);
+        $this->assertSame(0, $thread->visits); //ModelFactory : hardcode default visits to 0
+        
+        $this->call('GET', $thread->path());
+        
+        $this->assertEquals(1, $thread->fresh()->visits);
     }
 }

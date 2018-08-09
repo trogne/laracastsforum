@@ -1,3 +1,18 @@
+    Controllers - contains application logic and passing user input data to service
+
+    Services - The middleware between controller and repository. Gather data from controller, performs validation and business logic, and calling repositories for data manipulation.
+
+    Repositories - layer for interaction with models and performing DB operations
+
+    Models - common laravel model files with relationships defined
+
+
+decorators:
+    Base model: User. Decorated Objects: Member, Moderator, SuperUser etc
+    Base model: Article. Decorated Objects: FeaturedArticle, BlogPost,
+
+
+*******************
 sudo apt remove xvfb chromium-browser
 ######################
 
@@ -592,11 +607,391 @@ App\User::first()->notify(new App\Notifications\ThreadWasUpdated(App\Thread::fir
 
 
 
+46-Refactoring-For-Better-or-Worse
 
+git add .                WITH -A if change to tracked files
+git commit --amend       changes last commit
+
+git push -f              force (car non-fast forward)
+
+
+
+Providers/EventServiceProvider.php
+
+        'App\Events\ThreadHasNewReply' => [
+            'App\Listeners\NotifyThreadSubscribers',
+        ],        
+
+art event:generate
+
+    Events/ThreadHasNewReply.php
+    Listeners/NotifyThreadSubscribers.php
+
+
+
+48-Tracking-a-Threads-Last-Visited-Timestamp
+
+could use redis or any kind of cache driver you want
+
+
+
+50-Spam-Detection-Part-2
+
+art tinker
+
+preg_match('/(.)\\1{4,}/', 'aaaaaa', $matches);
+
+
+
+52-Catching-Server-Exceptions-On-The-Frontend
+
+rm -rf package-lock.json
+rm -rf node_modules
+npm install
+
+npm list --depth=0
+
+
+
+
+55-Refactor-to-a-Dedicated-Form-Class
+
+dedicated form request class
+
+art make:request CreatePostForm
+
+app\Http\Requests\CreatePostForm.php
+renamed Requests to Forms :
+app\Http\Forms\CreatePostForm.php
+
+
+56-Mentioned-User-Notifications-Part-1-Green
+
+art make:test MentionUsersTest
+
+
+regexr.com
+
+
+
+57-Mentioned-Users-Notification-2-Refactoring
+
+art make:notification YouWereMentioned
+
+
+
+60-Github-Style-Username-Autocompletion
+
+ichord/At.js
+
+caret.js
+
+php -S localhost:8888
+
+
+php users.php
+    error, need q param
+    
+php-cgi users.php q=joh
+MOI:
+php-cgi ./users.php q=joh
+
+
+
+61-Github-Style-Username-Autocomplete-Part-2
+
+npm search at.js
+
+npm install jquery.caret --save
+npm install at.js --save
+
+art make:controller Api/UsersController
+
+
+cp node_modules/at.js/dist/css/jquery.atwho.css public/css/vendor
+
+
+
+62-Basic-UI-Tweaks
+
+art tinker
+    $email = "patrick.fiset@gmail.com";
+    $default = "http://i.imgur.com/H357yaH.jpg";
+    $size = 40;
+    $grav_url = "https://www.gravatar.com/avatar/" . md5( strtolower( trim( $email ) ) ) . "?d=" . urlencode( $default ) . "&s=" . $size;
+
+
+
+
+64-Uploading-Avatars-Part-2
+
+art migrate:refresh
+
+art tinker
+
+factory('App\Thread', 30)->create();
+
+
+
+art make:policy UserPolicy
+
+
+tinker:
+App\User::latest()->first()
+
+    avatar_path
+    
+
+cmd as admin: 
+    hs up 
+    art storage:link
+        public/storage -> /home/vagrant/Code/forum/storage/app/public
+
+    windows mieux ça : 
+        mklink /j public\avatars storage\app\public\avatars
+            Junction created for public\avatars <<===>> storage\app\public\avatars
+               (directory jonction)
+
+http://forum.local/storage/avatars/iOzo0rrSSSotryv8MWCYUr5yAf9r3GfdsOJxN0SN.jpeg
+
+
+
+
+66-Trending-Threads-With-Redis
+
+composer require predis/predis
+
+mac: brew install redis
+
+me already installed on homestead:
+
+ps -aux | grep redis
+    redis     1489  0.0  0.4  36408  8316 ?        Ssl  06:05   0:34 /usr/bin/redis-server 127.0.0.1:6379
+
+redis-cli
+    127.0.0.1:6379>
+
+
+sorted set
+    sorted according to a score (score = number of times page read or clicked upon)
+
+ZINCRBY key increment member
+(z for sorted set)
+
+127.0.0.1:6379> ZINCRBY 'trending_threads' 1 'Some thread title'
+"1"
+127.0.0.1:6379>
+
+increment : 1 click = 1 point
+'Some thread title' = the thing to which you're incrementing
+
+
+127.0.0.1:6379> ZINCRBY 'trending_threads' 1 'Another thread title'
+"1"
+127.0.0.1:6379> ZINCRBY 'trending_threads' 1 'Another thread title'
+"2"
+
+127.0.0.1:6379> ZRANGE 'trending_threads' 0 -1
+1) "Some thread title"
+2) "Another thread title"
+
+127.0.0.1:6379> ZRANGE 'trending_threads' 0 -1 WITHSCORES
+1) "Some thread title"
+2) "1"
+3) "Another thread title"
+4) "3"
+
+ZREVRANGE 'trending_threads' 0 -1 WITHSCORES
+
+ZINCRBY 'trending_threads' 10 'Viral thread title'
+
+del trending_threads
+
+
+
+
+67b-Homemade Fakes (=Testing Laravel part 15)
+
+
+
+redis-cli
+
+flushall
+
+
+
+69-Thread-Views-Count-Design-Number-3
+
+thread migration :
+    $table->unsignedInteger('visits')->default(0);
+
+art migrate:refresh
+
+
+tinker:
+factory('App\Thread', 30)->create();
+
+
+
+
+71-Users-Must-Confirm-Their-Email-Address
+
+art make:middleware RedirectEmailNotConfirmed
+
+art migrate:refresh
+
+tinker
+    factory('App\Thread', 30)->create();
+
+
+
+72-Users-Must-Confirm-Their-Email-Address-2-Confirmation
+
+art make:mail PleaseConfirmYourEmail --markdown="email.confirm-email"
+
+art event:generate
+
+#MAIL_DRIVER=log
+MAIL_DRIVER=smtp
+
+
+php artisan config:cache
+php artisan cache:clear
+
+
+if do not want header footer : @component('mail::layout') ...
+https://laracasts.com/discuss/channels/laravel/modify-the-he<ader-and-footer-in-mail-markdown-mails?page=1
+
+
+
+RegisterController.php :
+    protected function create(array $data)
+    {
+        //return User::forceCreate([ // ok , was a mass-assignment issue!
+        return User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+            'confirmation_token' => str_random(25)
+        ]);
+    }
+
+
+
+art make:controller "Api\RegisterConfirmationController"
+
+
+post routes not working, TokenMismatchException : 
+php artisan config:clear
+    Remove the configuration cache file
+
+no Channels... view composer... : 
+php artisan cache:clear
+    Flush the application cache
+
+
+art migrate:refresh
+art tinker
+    factory('App\Thread', 30)->create();
+
+
+pour google smtp : 
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=patrick.fiset@gmail.com
+MAIL_PASSWORD=corpse30!Pat
+MAIL_ENCRYPTION=tls
+
+
+
+art route:list
+    GET|HEAD | register                                     | register              | App\Http\Controllers\Auth\RegisterController@showRegistrationForm      | web,guest                                    |
+    POST     | register                                     |                       | App\Http\Controllers\Auth\RegisterController@register                  | web,guest                                    |
+    GET|HEAD | register/confirm                             |                       | App\Http\Controllers\Api\RegisterConfirmationController@index          | web                                          |
+
+
+
+
+ remove default Closures api.php and web.php, then : 
+ 
+ art route:cache
+
+
+
+App\Thread::whereTitle('Help Me')->get()->count()
+
+App\Thread::whereTitle('Help Me')->pluck('slug')
+
+App\Thread::whereTitle('Help Me')->max('slug')
+
+App\Thread::whereTitle('Help Me')->max('id')
+
+App\Thread::whereTitle('Help Me')->orderBy('id', 'desc')->pluck('slug')->first()
+
+App\Thread::whereTitle('Help Me')->latest('id')->pluck('slug')->first()
+
+App\Thread::whereTitle('Help Me')->latest('id')->first()->slug
+
+App\Thread::whereTitle('Help Me')->latest('id')->value('slug')
+
+
+
+
+
+82-Confusing-Errors-and-Solutions
+
+SQLSTATE[HY000]: General error: 1215 Cannot add foreign key constraint (SQL: alter table `threads` add constraint `
+threads_best_reply_id_foreign` foreign key (`best_reply_id`) references `replies` (`id`) on delete set null)
+
+2017_11_24_160823_create_threads_table
+2017_11_25_160823_create_threads_table
+
+after the creation of replies
+
+
+art migrate:refresh //rollback all migrations and re-run them
+
+art migrate:fresh  //laravel 5.5,  deletes all and starts from scratch.   (lui manual delete then art migrate
+
+
+tests working off sqlite : foreign constraints not enabled by default
+
+
+
+85-An Administrator May Lock Any Thread-Part-2
+
+art make:middleware Administrator
+
+
+
+
+86-An Administrator May Lock Any Thread Part 3
+
+1 pass props... 
+2 event... 
+3 shared state... reference that shared state... store pattern...
+4 Vuex = formalized pattern of doing that very thing
+5 $parent.locked
+
+
+
+88-Update-Laravel-5-4-to-5-5
+
+art -V
+
+https://laravelshift.com/
+    not free, ridiculously cheap
+
+
+git log
+git status 
 git add .
-git commit --amend
+git commit --amend    (amend this to the previous commit)
+git commit --amend -m 'Episode 87'   (edit message directly)
 
-git push -f
+
+
 
 
 

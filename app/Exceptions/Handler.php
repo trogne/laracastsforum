@@ -4,6 +4,9 @@ namespace App\Exceptions;
 
 use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
+use App\Exceptions\ThrottleException;
+//use App\Exceptions\ThreadIsLockedException;
 
 class Handler extends ExceptionHandler
 {
@@ -46,9 +49,40 @@ class Handler extends ExceptionHandler
      * @param  \Exception  $exception
      * @return \Illuminate\Http\Response
      */
+    //public function render($request, Exception $exception)
+    //{
+    //    if (app()->environment() === 'testing') throw $exception;
+    //    return parent::render($request, $exception);
+    //}
+
     public function render($request, Exception $exception)
     {
-        //if (app()->environment() === 'testing') throw $exception;
-        return parent::render($request, $exception);
-    }
+        if ($exception instanceof ValidationException) {
+            if ($request->expectsJson()) {
+                //return response('Sorry, validation failed.', 422);
+                //return response($exception->getMessage(), 422);
+                $errors = '';
+                //foreach($e->errors() as $key => $value) { //errors method returns 'messages' = instance of MessageBag
+                //    $errors .= $value[0];
+                //};
+                foreach(collect($exception->errors()) as $error) {
+                    $errors .= $error[0];
+                };
+                return response($errors, 422);
+            }
+        }
+
+        //if ($exception instanceof ThreadIsLockedException) {
+        //    //dd($exception->getMessage());
+        //    return response( 'Thread Is Locked', 422);
+        //}
+        
+        if ($exception instanceof ThrottleException) {
+            return response( 'You are replying too frequently.', 429);
+        }
+        //else {
+        //    dd(get_class($exception)); // "Illuminate\Auth\AuthorizationException", "Illuminate\Auth\AuthenticationException"
+            return parent::render($request, $exception); // render an exception that is bubbled all the way up to the top
+        //}
+    }    
 }

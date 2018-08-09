@@ -23,15 +23,18 @@
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/mystyle.css') }}" rel="stylesheet">
-    
+        
     <style>
         body { padding-bottom: 100px;  } /*no effect*/
-        .level { display: flex; align-items: center; }  /*df, aic*/
+        .level { display: flex; align-items: center; }  /*df, aic,   VERTICAL align*/
         .flex { flex: 1; } /*flex it as much as we can*/
         .mr-1 { margin-right: 1em; }
+        .ml-a { margin-left: auto; }
         [v-cloak] { display: none; }
         /*.activ>a {background-color: red !important}*/
     </style>
+        
+    @yield('header')
 </head>
 <body style="padding-bottom: 100px;">
     <div id="app">
@@ -44,5 +47,6 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}"></script>
+    @yield('scripts')
 </body>
 </html>

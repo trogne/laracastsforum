@@ -1,15 +1,47 @@
-@extends('layouts.app');
+@extends('layouts.app')
 
 @section('content')
     <div class="container">
         <div class="row"> {{-- works without the row --}}
             <div class="col-md-8 col-md-offset-2">
+                <div>
+                    <avatar-form :user="{{ $profileUser }}"></avatar-form>
+                </div>
+                    
+                {{--   NON avatar-form Vue component : 
                 <div class="page-header">
                     <h1>
                         {{ $profileUser->name }}
                         <small>Since {{ $profileUser->created_at->diffForHumans() }}</small>
                     </h1>
+                        
+                    @can('update', $profileUser)  //can directive
+                        <!--<form method="POST" action="/api/users/{{ $profileUser->id }}">-->
+                        <form method="POST" action="{{ route('avatar', $profileUser->id) }}" enctype="multipart/form-data">
+                            {{ csrf_field() }}
+                            <input type="file" name="avatar">
+                            <input type="text" name="maxence" value="{{ old('maxence') }}" >
+                            <button type="submit" class="btn btn-primary">Add avatar</button>
+                        </form>
+                        
+                        @if(session()->has('input'))
+                            @foreach(session('input') as $message)
+                                <li>{{ $message }}</li>
+                            @endforeach
+                        @endif
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                        
+                    @endcan
+                    
+                    <!--<img src="/{{ $profileUser->avatar_path }}" width="50" height="50">-->
+                    <!--<img src="{{ asset($profileUser->avatar_path) }}" width="50" height="50">-->
+                    <img src="{{ $profileUser->avatar() }}" width="50" height="50">
                 </div>
+                --}}
+                    
+                    
                 {{-- @foreach($profileUser->threads as $thread) --}}
                  {{-- @foreach($threads as $thread)  --}}
                  {{--  @foreach($activities as $activity)

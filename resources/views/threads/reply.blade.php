@@ -1,5 +1,6 @@
 {{-- MOVED TO VUE !!! --}}
 {{-- inline-template : yes I want a vue component, but the template for it is actually going to be inline --}}
+{{-- FINI, now an full vue component !!!! --}}
 <reply :data="{{ $reply }}" inline-template v-cloak>  {{-- : for v-bind:,   to pass as json  ;  v-cloak removed when everything is loaded --}}  
     <div id="reply-{{ $reply->id }}" class="panel panel-default">
         <div class="panel-heading">

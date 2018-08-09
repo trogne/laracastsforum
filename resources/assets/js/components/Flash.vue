@@ -1,20 +1,24 @@
 <template>
-    <div class="alert alert-success alert-flash" role="alert" v-show="show">
-      <strong>Success!</strong> {{ body }}
-    </div>
-</template>
+    <div class="alert alert-flash"
+        :class="'alert-'+level"
+        role="alert"
+        v-show="show"
+        v-text="body">
+    </div>   
+</template>   /*v-text="body" au lieu de {{ body }} inline*/
 
 <script>
     export default {
         props: ['message'],
         
-        mounted() {
-            console.log('Component mounted.')
-        },
+        //mounted() {
+        //    console.log('Component mounted.')
+        //},
         
         data(){
             return {
-                body: '',
+                body: this.message,
+                level: 'success',
                 show: false
             }
         },
@@ -23,20 +27,35 @@
             if (this.message) {
                 //this.body = this.message;
                 //this.show = true;
-                this.flash(this.message);
+                //this.flash(this.message);
+                //this.flash(JSON.parse(this.message)); //si dans middleware: json_encode([...]
+                //if (/^[\],:{}\s]*$/.test(this.message.replace(/\\["\\\/bfnrtu]/g, '@').
+                //replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+                //replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) { // check if json formatted string
+                //    this.flash(JSON.parse(this.message));
+                //}else{
+                //    this.flash();
+                //}
+                this.flash();
                 
                 //setTimeout(() => {
                 //    this.show = false;
                 //}, 3000);
             }
             
-            window.events.$on('flash', message => this.flash(message)); //global event bus
+            window.events.$on(  //global event bus
+                'flash', data => this.flash(data) //this.flash = le flash de ce component
+            );
         },
         
         methods: {
             //$('.alert-flash').delay(3000).fadeOut(); //NO, we want a clear data-driven approach
-            flash(message) {
-                this.body = message;
+            flash(data) {
+                if (data) {
+                    this.body = data.message;
+                    this.level = data.level;                    
+                }
+                
                 this.show = true;
                 
                 this.hide();

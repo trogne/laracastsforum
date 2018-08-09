@@ -17,7 +17,7 @@ class Activity extends Model
     public static function feed($user, $take = 50)
     {
         //return $user->activity()  //don't even have to reference the activity relationship on user
-        return static::where('user_id', $user->id) //works with self too
+        return static::where('user_id', $user->id) // = Activity::where   //works with self too
             ->latest()
             ->with('subject')
             ->take($take)

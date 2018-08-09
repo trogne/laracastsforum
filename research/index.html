@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>At</title>
+    <link href="css/jquery.atwho.css" rel="stylesheet">
+</head>
+
+<body>
+    <input type="" id="inputor">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="js/caret.js"></script>
+    <script src="js/jquery.atwho.js"></script>
+
+    
+
+    <script>
+        $('#inputor').atwho({
+            at: "@",
+            //data: ['Peter', 'Tom', 'Anne']
+            //data: 'http://localhost:8888/users.php'
+            delay: 750,
+            callbacks: {
+                remoteFilter: function(query, callback) { //query = text after '@'
+                    $.getJSON('/users.php', {q: query}, function(usernames) {
+                        callback(usernames); //the atwho callback
+                    })
+                }
+            },
+            //limit: 50,
+        });
+    </script>
+</body>
+
+</html>

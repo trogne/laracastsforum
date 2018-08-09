@@ -25,6 +25,12 @@
         created() {
             axios.get("/profiles/" + window.App.user.name + "/notifications")
                 .then(response => this.notifications = response.data);
+
+            //check for new notifications
+            setInterval(function () {
+                axios.get("/profiles/" + window.App.user.name + "/notifications")
+                    .then(response => this.notifications = response.data);
+            }.bind(this), 10000);
         },
         
         methods: {

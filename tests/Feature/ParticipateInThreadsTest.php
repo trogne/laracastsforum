@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature; // Feature = outside-in tests
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ParticipateInForum extends TestCase
+class ParticipateInThreadsTest extends TestCase
 {
     use RefreshDatabase;
     
@@ -42,7 +42,7 @@ class ParticipateInForum extends TestCase
         $reply = make('App\Reply');
         
         $this->post($thread->path().'/replies', $reply->toArray());
-       
+        
         //$this->get($thread->path())
         //    ->assertSee($reply->body); //lui non, cause reply loaded with javascript (mais moi oui)
         $this->assertDatabaseHas('replies', ['body' => $reply->body]); //il fait donc ça
@@ -59,8 +59,9 @@ class ParticipateInForum extends TestCase
         
         return $this->post($thread->path().'/replies', $reply->toArray())
             ->assertSessionHasErrors('body');
-    }    
-
+            //->assertstatus(422); //if using try/catch, now not needed cause  if ($request->expectsJson()) in Handler,  donc pas catching... bubble up...
+    }
+    
     /** @test */
     function unauthorized_users_cannot_delete_replies()
     {
@@ -114,5 +115,46 @@ class ParticipateInForum extends TestCase
         $this->patch("/replies/{$reply->id}", ['body' => $updatedReply]);
         
         $this->assertDatabaseHas('replies', ['id' => $reply->id, 'body' => $updatedReply]);
+    }
+    
+    /** @test */
+    function replies_that_contain_spam_may_not_be_created()
+    {
+        $this->withExceptionHandling(); //302 (HTTP FOUND, redirects back to previous page and passes through the errors)
+            //before the 302, we intercept (app\Exception\Handler.php) the "ValidationException: The given data was invalid." 
+        
+        $this->signIn();
+        $thread = create('App\Thread');
+        
+        $reply = make('App\Reply', [
+            'body' => 'Yahoo Customer Support'
+        ]);
+        
+        //$this->expectException(\Exception::class); 
+        //$this->post($thread->path().'/replies', $reply->toArray());
+
+        ////with try/catch :
+        //$this->post($thread->path().'/replies', $reply->toArray())
+        $this->json('post', $thread->path().'/replies', $reply->toArray())
+            ->assertStatus(422);
+    }
+    
+    /** @test */
+    function users_may_only_reply_a_maximum_of_once_per_minute()
+    {
+        $this->withExceptionHandling(); //Expected status code 422 but received 403. (lui 429, too many requests, au lieu de 422)
+        
+        $this->signIn();
+        $thread = create('App\Thread');        
+        
+        $reply = make('App\Reply', [
+            'body' => 'My simple reply'
+        ]);
+
+        $this->post($thread->path().'/replies', $reply->toArray())
+            ->assertStatus(200);
+
+        $this->post($thread->path().'/replies', $reply->toArray())
+            ->assertStatus(429);
     }
 }

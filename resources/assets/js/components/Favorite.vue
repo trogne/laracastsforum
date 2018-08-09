@@ -31,19 +31,19 @@
         
         methods: {
             toggle() {
-                this.active ? this.create() : this.destroy();
+                this.active ? this.destroy() : this.create();
             },
             
-            create(){
-                axios.delete(this.endpoint);
-                this.active = false;
-                this.count--;                
-            },
-            
-            destroy() {
+            create() {
                 axios.post(this.endpoint);
                 this.active = true;
                 this.count++;
+            },
+            
+            destroy() {
+                axios.delete(this.endpoint);
+                this.active = false;
+                this.count--;                
             }
         }
     }

@@ -3,38 +3,38 @@
 @section('content')
 <div class="container">
     <div class="row">
-        <div class="col-md-8 col-md-offset-2">
+        {{-- <div class="col-md-8 col-md-offset-2"> --}}
+        <div class="col-md-8">
             {{-- @foreach($threads as $thread) --}}
-            @forelse($threads as $thread)
-               <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <div class="level">
-                            <h4 class="flex">
-                                <!--<a href="/threads/{{ $thread->id }}">-->
-                                <a href="{{ $thread->path() }}">
-                                    {{ $thread->title }}
-                                </a>
-                            </h4>
-                            <a href="{{ $thread->path() }}">
-                                {{ $thread->replies_count }} {{ str_plural('reply', $thread->replies_count) }}
-                            </a>
-                        </div>                        
-                    </div>
-                    <div class="panel-body">
-                        <div class="body">{{ $thread->body }}</div>
-                    </div>
-                </div>
-            @empty
-                <p>There are no relevant records at this time.</p>
-            @endforelse
-            {{-- 
+            {{-- @include('threads._list', ['threads' => $threadsByFiso]) --}}
+            @include('threads._list')
+            {{-- {{ $threads->links() }} --}}  {{-- get_class($threads) --}} {{-- Illuminate\Pagination\LengthAwarePaginator --}}
             @if($popular)
-                {{ $threads->appends(['popular' => '1'])->links() }}
+                {{ $threads->appends(['popular' => '1'])->links() }} {{-- appends to the query --}}
             @else
                 {{ $threads->links() }}                        
             @endif
-             --}}
         </div>
+        <div class="col-md-4">
+            @if(count($trending))
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Trending Threads
+                    </div>
+                    <div class="panel-body">
+                        <ul class="list-group">
+                            @foreach($trending as $thread)
+                                <li class="list-group-item">
+                                    <a href="{{ url($thread->path) }}">
+                                        {{ $thread->title }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>                
+            @endif
+        </div>            
     </div>
 </div>
 @endsection

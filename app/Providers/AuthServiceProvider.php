@@ -16,6 +16,7 @@ class AuthServiceProvider extends ServiceProvider
         //'App\Model' => 'App\Policies\ModelPolicy',
         'App\Thread' => 'App\Policies\ThreadPolicy',
         'App\Reply' => 'App\Policies\ReplyPolicy',
+        'App\User' => 'App\Policies\UserPolicy',
     ];
 
     /**
@@ -27,10 +28,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Gate::before(function ($user){
-            if($user->name === 'Fiso'){
-                return true;
-            }
-        });    
+        //Gate::before(function ($user){ //aussi client side, app.js , Vue.prototype.authorize
+        //    if($user->name === 'Fiso'){
+        //        return true;
+        //    }
+        //});    
     }
 }

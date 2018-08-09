@@ -23,10 +23,26 @@ $factory->define(App\User::class, function (Faker $faker) {
         'email' => $faker->unique()->safeEmail,
         'password' => $password ?: $password = bcrypt('secret'),
         'remember_token' => str_random(10),
+        'confirmed' => true
+    ];
+});
+
+$factory->state(App\User::class, 'unconfirmed', function () {
+    return [
+        'confirmed' => false
+    ];
+});
+
+$factory->state(App\User::class, 'administrator', function () {
+    return [
+        'name' => 'JohnDoe' //ou 'is_admin' collumn :   'is_admin' => true
     ];
 });
 
 $factory->define(App\Thread::class, function (Faker $faker) {
+    
+    $title = $faker->sentence;
+    
     return [
         'user_id' => function(){
             return factory('App\User')->create()->id;
@@ -34,8 +50,12 @@ $factory->define(App\Thread::class, function (Faker $faker) {
         'channel_id' => function(){
             return factory('App\Channel')->create()->id;
         },
-        'title' => $faker->sentence,
-        'body' => $faker->paragraph
+        //'title' => $faker->sentence,
+        'title' => $title,
+        'body' => $faker->paragraph,
+        'visits' => 0,
+        'slug' => str_slug($title),
+        'locked' => false
     ];
 });
 
@@ -54,6 +74,7 @@ $factory->define(App\Reply::class, function (Faker $faker) {
             return factory('App\Thread')->create()->id;
         },
         'user_id' => function(){
+            //return Auth::user()->id ?: factory('App\User')->create()->id; //ou auth()->id() // auth()->user()->id;
             return factory('App\User')->create()->id;
         },
         'body' => $faker->paragraph,

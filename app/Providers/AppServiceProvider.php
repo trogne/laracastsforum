@@ -23,7 +23,10 @@ class AppServiceProvider extends ServiceProvider
             });
             //$view->with('channels', Channel::all());
             $view->with('channels', $channels);
-        });        
+        });
+        
+        //\Validator::extend('spamfree', 'App\Rules\SpamFree@passes');
+        //5.5 : php artisan make:rule SpamFree (auto scaffold class within App\Rules dir)
     }
 
     /**

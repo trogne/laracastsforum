@@ -10,13 +10,17 @@
         
         <!--now transition in Reply.vue-->
         <div v-for="(reply, index) in items" :key="reply.id">
-            <reply :data="reply" @deleted="remove(index)"></reply>
+            <reply :reply="reply" @deleted="remove(index)"></reply> <!--data-reply for initial seed data, but here just reply, cause no need to mutate it-->
         </div>
         
         <paginator :dataSet="dataSet" @changed="fetch"></paginator>
         
         <!--<new-reply :endpoint="endpoint" @created="add"></new-reply>-->
-        <new-reply @created="add"></new-reply>
+        <!--<new-reply @created="add" v-if="! $parent.locked"></new-reply>-->
+        <p v-if="$parent.locked">
+            This thread has been locked. No more replies are allowed.
+        </p>
+        <new-reply @created="add" v-else></new-reply>
     </div>
 </template>
 
@@ -38,7 +42,7 @@
         
         data() {
             return {
-                //items: this.data, //pas necessaire, peut faire "v-for="(reply, index) in data"
+                //items: this.data, //pas necessaire, peut faire "v-for="(reply, index) in items"
                 //items: [], //getting that from mixins/collection
                 dataSet: false
                 //endpoint: location.pathname + '/replies',
@@ -73,7 +77,7 @@
                 return `${location.pathname}/replies?page=${page}`;
             },
             
-            refresh({data}) {
+            refresh({data}) { //response.data
                 this.dataSet = data;
                 this.items = data.data;
                 

@@ -21,6 +21,9 @@
 </template>
 
 <script>
+    import 'jquery.caret';
+    import 'at.js';
+
     export default {
         //props: ['endpoint'],
         
@@ -30,16 +33,34 @@
             }
         },
         
-        computed: {
-            signedIn() {
-                return window.App.signedIn;
-            }
+        //computed: {
+        //    signedIn() {
+        //        return window.App.signedIn;
+        //    }
+        //},
+        
+        mounted() {
+            $('#body').atwho({
+                at: "@",
+                delay: 750,
+                callbacks: {
+                    remoteFilter: function(query, callback) {
+                        $.getJSON('/api/users', {name: query}, function(usernames) {
+                            callback(usernames);
+                        })
+                    }
+                },
+            });
         },
 
         methods: {
             addReply() {
                 //axios.post(this.endpoint, { body: this.body })
                 axios.post(location.pathname + '/replies', { body: this.body })
+                    .catch(error => {
+                        flash(error.response.data, 'danger');
+                        //flash(error.response.data.errors.body[0], 'danger'); //WITHOUT try/catch
+                    })
                     .then(({data}) => { //destructuring data from the response
                         this.body = '';
                         

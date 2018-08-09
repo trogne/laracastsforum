@@ -6,6 +6,9 @@ use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
+use App\Mail\PleaseConfirmYourEmail;
 
 class RegisterController extends Controller
 {
@@ -62,10 +65,26 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        //do { 
+        //    $token = str_random(25);
+        //} while (User::where('confirmation_token', $token)->exists());
+
+        //return User::create([
+        return User::forceCreate([ // ok , was a mass-assignment issue! because of confirmation_token
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
+            //'confirmation_token' => str_random(25)
+            'confirmation_token' => str_limit(md5($data['email'] . str_random()), 25, '') //3rd arg '' cause don't want to add '...' //str_... = laravel helpers //// User::generateConfirmationToken()
         ]);
+    }
+    
+    //from RegistersUsers.php
+    protected function registered(Request $request, $user)
+    {
+        //Mail::to($event->user)->send(new PleaseConfirmYourEmail($event->user));
+        Mail::to($user)->send(new PleaseConfirmYourEmail($user));
+
+        return redirect($this->redirectPath());
     }
 }
