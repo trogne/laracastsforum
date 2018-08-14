@@ -2,13 +2,15 @@
     <div>
         <div v-if="signedIn">
             <div class="form-group">
-                <textarea name="body"
-                          id="body"
-                          class="form-control"
-                          placeholder="Have something to say?"
-                          rows="5"
-                          required
-                          v-model="body"></textarea>
+                <!--<textarea name="body"-->
+                <!--          id="body"-->
+                <!--          class="form-control"-->
+                <!--          placeholder="Have something to say?"-->
+                <!--          rows="5"-->
+                <!--          required-->
+                <!--          v-model="body"></textarea>-->
+                <!--<wysiwyg name="body" v-model="body" placeholder="Have something to say?" ref="trix"></wysiwyg>-->
+                <wysiwyg name="body" v-model="body" placeholder="Have something to say?" :shouldClear="completed"></wysiwyg>
             </div>
             <button type="submit"
                     class="btn btn-default"
@@ -29,7 +31,8 @@
         
         data() {
             return {
-                body: ''
+                body: '',
+                completed: false
             }
         },
         
@@ -40,6 +43,8 @@
         //},
         
         mounted() {
+            this.$emit('maxwell', 'marcel');
+            
             $('#body').atwho({
                 at: "@",
                 delay: 750,
@@ -63,6 +68,11 @@
                     })
                     .then(({data}) => { //destructuring data from the response
                         this.body = '';
+
+                        //document.querySelector('trix-editor').value = '';
+                        //this.$refs.trix.$refs.trix.value =  ''; //1st this.$refs = wysiwyg... then the ref of the child
+                        //see also event in Wysiwyg.vue
+                        this.completed = true;
                         
                         flash('Your reply has been posted.');
                         

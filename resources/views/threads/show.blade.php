@@ -14,43 +14,8 @@
 <thread-view :thread="{{ $thread }}" inline-template>
     <div class="container">
         <div class="row">
-            <div class="col-md-8"> {{-- removed col-md-offset-2 --}}
-                <div class="panel panel-default">
-                    <div class="panel-heading">                    
-                        <!--<a href="#">{{-- $thread->creatorName() --}}</a> posted:-->  <!--to follow Law of Demeter (anti-pattern) -->  
-                        {{-- <a href="/profiles/{{ $thread->creator->name }}">{{ $thread->creator->name }}</a> posted: --}}
-                        <div class="level">
-                            {{--
-                                @if($thread->creator->avatar_path)
-                                    <img src="{{ asset($thread->creator->avatar_path) }}" alt="{{ $thread->creator->name }}" width="25" height="25" class="mr-1">
-                                @else
-                                    <img src="https://www.gravatar.com/avatar/{{md5(strtolower(trim($thread->creator->email)))}}?d={{ urlencode("http://i.imgur.com/H357yaH.jpg") }} &s=40" width="25" height="25" class="mr-1">
-                                @endif
-                            --}}
-                            {{-- <img src="{{ asset($thread->creator->avatar_path) }}" alt="{{ $thread->creator->name }}" width="25" height="25" class="mr-1"> --}}
-                            {{-- <img src="{{ $thread->creator->avatar() }}" alt="{{ $thread->creator->name }}" width="25" height="25" class="mr-1"> --}}
-                            <img src="{{ $thread->creator->avatar_path }}" alt="{{ $thread->creator->name }}" width="25" height="25" class="mr-1">
-                            
-                            <span class="flex">
-                                <a href="{{ route('profile', $thread->creator) }}">{{ $thread->creator->name }}</a> posted:
-                                {{ $thread->title }}
-                            </span>
-                            {{-- @if(Auth::check()) --}}
-                            {{-- @if (Auth::user()->can('update', $thread)) --}}
-                            @can('update', $thread)
-                                <form action="{{ $thread->path() }}" method="POST">
-                                    {{ csrf_field() }}
-                                    {{ method_field('DELETE') }}
-                                    
-                                    <button type="submit" class="btn btn-link">Delete Thread</button>
-                                </form>
-                            @endcan
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        {{ $thread->body }}
-                    </div>
-                </div>
+            <div class="col-md-8" v-cloak> {{-- removed col-md-offset-2 --}}
+                @include('threads._question')
                     
                 {{-- @foreach($thread->replies as $reply) --}}
                 {{-- @foreach($replies as $reply)

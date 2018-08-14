@@ -68,7 +68,7 @@
         <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">
-                    @auth 
+                    @auth
                         <a href="{{ url('/home') }}">Home</a>
                     @else
                         <a href="{{ route('login') }}">Login</a>
@@ -89,15 +89,6 @@
                     <a href="https://forge.laravel.com">Forge</a>
                     <a href="https://github.com/laravel/laravel">GitHub</a>
                 </div>
-                
-                @php
-                    $body = '<script>alert("gotcha")</script><h3>Heading Three Is Allowed</h3><a href="#" onclick="alert(\'gotcha\')">Click Me</a>'
-                @endphp
-                
-                {{-- {{ $body }} --}}
-                {{-- {!! $body !!} --}}
-                {{-- {!! strip_tags($body, '<h1><h2><h3><a>') !!} --}}  <!--STILL, THE ONCLICK EVENT TRIGGERS!!!-->
-                {!! Purify::clean($body) !!}
             </div>
         </div>
     </body>

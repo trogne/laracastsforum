@@ -65,7 +65,9 @@ abstract class Filters   //abstract = no instantiate directly... always instanti
     {
         //return array_keys($this->request->only($this->filters));
         //return $this->request->intersect($this->filters); //Method intersect does not exist. (removed in 5.5)
-        return $this->request->only($this->filters);
+        //return $this->request->only($this->filters); //works too
+        return array_filter($this->request->only($this->filters));
+        
         //var_dump(collect($this->request->only($this->filters))->flip()); //Illuminate\Support\Collection
         //return collect($this->request->only($this->filters)); //collect sinon :  Call to a member function filter() on array
         //return collect($this->request->only($this->filters))->flip();

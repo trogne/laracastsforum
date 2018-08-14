@@ -135,4 +135,9 @@ class Reply extends Model
     //    app(Spam::class)->detect($attributes['body']);
     //    parent::update($attributes);
     //}
+
+    public function getBodyAttribute($body)
+    {
+        return \Purify::clean($body);
+    }  
 }

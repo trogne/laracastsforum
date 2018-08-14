@@ -14,11 +14,25 @@ use App\Events\ThreadReceivedNewReply;
 //use App\Visits;
 use App\Reply;
 //use App\Exceptions\ThreadIsLockedException;
+use Laravel\Scout\Searchable;
+//use Stevebauman\Purify\Purify; //NO!!!!!!!!!!
+//use Stevebauman\Purify\Facades\Purify;
 
 class Thread extends Model
 {
     //use RecordsActivity, RecordsVisits;
-    use RecordsActivity;
+    use RecordsActivity, Searchable;
+    
+    protected $purify;
+    
+    ////pas rap :)
+    //public function __construct(array $attributes = array())
+    //{
+    //    //dd($attributes); // __construct method called with all the attributes, so I have to pass that to the parent 
+    //    parent::__construct($attributes);
+    //
+    //    $this->purify = new Purify;
+    //}    
     
     protected $guarded = [];
     
@@ -347,4 +361,18 @@ class Thread extends Model
     //    //return Redis::get($this->visitsCacheKey()) ?? 0; // ?? = null coalesce operator     ?? vs ?:   
     //    return new Visits($this);
     //}
+    
+    public function toSearchableArray() //override method from Searchable trait
+    {
+        return $this->toArray() + ['path' => $this->path()];
+    }
+    
+    public function getBodyAttribute($body) //custom accessor
+    {
+        ////using __construct : 
+        //return Purify::clean($body); //no, Purify::clean() should not be called statically
+        //return $this->purify->clean($body);
+        ////without __construct :
+        return \Purify::clean($body); //works, maybe because \Purify is already instantiated
+    }    
 }

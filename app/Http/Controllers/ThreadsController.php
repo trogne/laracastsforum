@@ -9,6 +9,8 @@ use App\Rules\SpamFree;
 use Illuminate\Http\Request;
 //use Illuminate\Support\Facades\Redis;
 use App\Trending;
+//use Zttp\Zttp;
+use App\Rules\Recaptcha;
 
 class ThreadsController extends Controller
 {
@@ -148,9 +150,11 @@ class ThreadsController extends Controller
      * @return \Illuminate\Http\Response
      */
     //public function store(Request $request, Spam $spam)
-    public function store(Request $request)
+    //public function store(Request $request)
+    //public function store(Request $request, Recaptcha $recaptcha) //that way we can substitute our mock when and if we need to
+    public function store(Recaptcha $recaptcha) // bah, request() au lieu de $request
     {
-        //dd($request->all());
+        //dd(request()->all());
         //dd(auth()); //Illuminate\Auth\AuthManager    (auth=alias=facade, voir config/app.php)
         
         //$spam->detect(request('body'));
@@ -173,13 +177,27 @@ class ThreadsController extends Controller
         request()->validate([
             'title' => ['required', new SpamFree], //that way, no need change AppServiceProvider and resources\lang\en\validation.php
             'body' => ['required', new SpamFree],
-            'channel_id' => 'required|exists:channels,id'
+            'channel_id' => 'required|exists:channels,id',
+            //'g-recaptcha-response' => ['required', new Recaptcha] //recaptcha now a custom validation rule
+            'g-recaptcha-response' => ['required', $recaptcha]
         ]); //5.5
         
         ////custom mutator instead
         //$slug = str_slug(request('title'));
         //if (Thread::where('slug', $slug)->exists()) {
         //    $slug = $slug . '-2';
+        //}
+        
+        ////recaptcha now a custom validation rule
+        //$response = Zttp::asFormParams()->post('https://www.google.com/recaptcha/api/siteverify', [   //asFormParams car google expects form data (sinon json)
+        //    'secret' => config('services.recaptcha.secret'),
+        //    'response' => $request->input('g-recaptcha-response'), //input syntax since dashes   //reponse = 03AHqfIOnTgcR3PRcuGaEyFy5...
+        //    'remoteip' => $_SERVER['REMOTE_ADDR'], //server superglobal , remote user ip, 192.168.1.10
+        //]);
+        ////dd($response->json()); // attay [success=>true, challenge_ts=>2018..., hostname=>forum.local]
+        //
+        //if (! $response->json()['success']) {
+        //    throw new \Exception('Recaptcha failed');
         //}
         
         $thread = Thread::create([
@@ -208,6 +226,7 @@ class ThreadsController extends Controller
     //public function show(Thread $thread) //ROUTE MODEL BINDING
     public function show($channel, Thread $thread, Trending $trending) //doing nothing with the channel here
     {
+        //return $thread; //laravel will cast this to json for us
         //return $thread->load('creator')->load('replies');
         //return  $thread->withCount('replies')->first();
         //return Thread::withCount('replies')->first();
@@ -289,7 +308,37 @@ class ThreadsController extends Controller
         //    $thread->lock();
         //}
         
+        //$data = request()->validate([ //returns the validated params
+        //    'title' => ['required', new SpamFree],
+        //    'body' => ['required', new SpamFree]
+        //]);
+        //
+        ////$thread->update([
+        ////    'title' => request()->title,
+        ////    'body' => request()->body
+        ////]);
+        ////$thread->update(request(['title', 'body']));
+        //$thread->update($data);
         
+        //$thread->update(request()->validate([
+        //    'title' => ['required', new SpamFree],
+        //    'body' => ['required', new SpamFree]
+        //]));
+
+        ////dd(get_class(tap($thread))); //Illuminate\Support\HigherOrderTapProxy
+        //return tap($thread)->update(request()->validate([ //returns the thread :)
+        //    'title' => ['required', new SpamFree],
+        //    'body' => ['required', new SpamFree]
+        //])); //works too, but "tap" is confusing to our team
+
+        $this->authorize('update', $thread);
+        
+        $thread->update(request()->validate([
+            'title' => ['required', new SpamFree],
+            'body' => ['required', new SpamFree]
+        ]));
+        
+        return $thread;
     }
 
     /**

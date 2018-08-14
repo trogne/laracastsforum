@@ -991,8 +991,199 @@ git commit --amend    (amend this to the previous commit)
 git commit --amend -m 'Episode 87'   (edit message directly)
 
 
+    "require": {
+        "laravel/framework": "5.5.*",
+
+    "require-dev": {
+        "phpunit/phpunit": "~6.0"
+
+    "scripts": {
+        ...
+        "post-autoload-dump": [
+            "@php artisan package:discover"
+        ]
 
 
+
+discover: allows a package to specify its associated service provider and have that automatically be registered
+
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "laravel/dusk",
+                "barryvdh/laravel-debugbar"
+            ]
+        }
+    },
+    
+
+composer update
+
+composer global update
+    (for Laravel installer... laravel new...)
+
+
+
+    packagejson:
+        "config": {
+            ...
+            "optimize-autoloader": true
+
+    composer dump-autoload
+
+    Tinker:
+        new Thread
+            [!] Aliasing 'Thread' to 'App\Thread' for this Tinker session.
+
+
+blade:
+    @php
+        $teamMember = true;
+    @endphp
+
+
+
+89-Implementing-Recaptcha
+
+https://www.google.com/recaptcha
+
+Site key
+    6LehOmkUAAAAADGPXVhvHyjnB631zCN1FdmkAZ_L
+Secret key
+    6LehOmkUAAAAAHTmCBk-5sq62i7TOLmhOjrukB0o
+
+.env : 
+    RECAPTCHA_SECRET=6LehOmkUAAAAAHTmCBk-5sq62i7TOLmhOjrukB0o
+
+
+
+composer require kitetail/zttp
+    pull-ins guzzle as a dependency
+    zttp package = wrapper around Guzzle
+    Guzzle = standard tool for performing these kind of requests
+
+
+94-First-Class-Search-Part-1-A-Review
+
+Laravel Scout
+
+first-party package, driver-based
+    3rd-party drivers : Algolia, Elastic Search, standard mysql search...
+
+
+composer require laravel/scout
+
+php artisan vendor:publish --provider="Laravel\Scout\ScoutServiceProvider"
+
+    Copied File [/vendor/laravel/scout/config/scout.php] To [/config/scout.php]
+    Publishing complete.
+
+
+composer require algolia/algoliasearch-client-php
+
+
+
+art list scout
+
+art scout:import 'App\Thread'
+    Imported [App\Thread] models up to ID: 33
+    All [App\Thread] records have been imported.
+
+    from now on, new thread will be in algolia indices...
+
+Ranking
+    title
+    body
+
+
+art tinker
+
+$t = factory('App\Thread')->make();
+
+$t->save();
+    as part of that save process, submit a request to algolia...
+
+App\Thread::search('foo')->get()
+
+$t->update(['title' => 'Changed title']);
+
+
+
+95-First-Class-Search-Part-2-Implementation
+
+phpunit.xml
+    <php>
+        <env name="SCOUT_DRIVER" value="null"/>
+
+
+96-First-Class-Search-Faceting-and-Ranking
+
+we're NOT gonna use vue-cli : 
+    npm install --global vue-cli
+    vue init webpack-simple vue-instantsearch-getting-started
+
+    cd vue0instantsearch-getting-started
+    npm install
+    
+
+win10:
+npm install vue-instantsearch
+
+
+
+99-WYSIWYG
+
+win10:
+npm install trix
+
+
+
+101-Sanitizing-Is-A-Must
+
+valet secure    (ou valet secure laravel, pour laravel.test ...)
+    Restarting php71...
+    Restarting nginx...
+    The [forum.dev] site has been secured with a fresh TLS certificate.
+    
+
+homestead :(
+
+ls /etc/nginx/ssl/
+    forum.dev.crt
+
+click on crt.... won't work because SELF-SIGNED cert
+
+
+
+composer require stevebauman/purify
+
+
+https://github.com/stevebauman/purify/blob/master/composer.json : 
+
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Stevebauman\\Purify\\PurifyServiceProvider"
+            ],
+            "aliases": {
+                "Purify": "Stevebauman\\Purify\\Facades\\Purify"
+            }
+        }
+    }
+
+
+AUTOMATIC PACKAGE DISCOVERY
+    auto-register the service provider for the package as well as any aliases
+
+
+php artisan vendor:publish --provider="Stevebauman\Purify\PurifyServiceProvider"
+
+    Copied File [/vendor/stevebauman/purify/src/Config/config.php] To [/config/purify.php]
+    Publishing complete.
+
+
+
+C:\Users\patri\homestead\aliases
 
 
 

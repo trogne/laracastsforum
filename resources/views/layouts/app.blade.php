@@ -23,18 +23,22 @@
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     <link href="{{ asset('css/mystyle.css') }}" rel="stylesheet">
-        
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/trix/0.12.0/trix.css">
+    
     <style>
         body { padding-bottom: 100px;  } /*no effect*/
         .level { display: flex; align-items: center; }  /*df, aic,   VERTICAL align*/
+        .level-item { margin-right: 1em; }
         .flex { flex: 1; } /*flex it as much as we can*/
         .mr-1 { margin-right: 1em; }
         .ml-a { margin-left: auto; }
         [v-cloak] { display: none; }
+        .ais-highlight > em { background: yellow; font-style: normal; }
+        trix-editor { background: white; }
         /*.activ>a {background-color: red !important}*/
     </style>
         
-    @yield('header')
+    @yield('head')
 </head>
 <body style="padding-bottom: 100px;">
     <div id="app">

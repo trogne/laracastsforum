@@ -15,6 +15,10 @@ window.flash = function (message, level = 'success') {
      window.events.$emit('flash', { message, level });
 }; // flash('my new flash message')
 
+import InstantSearch from 'vue-instantsearch';
+
+Vue.use(InstantSearch);
+
 //Vue.prototype.authorize = function (handler) {
 //    //return handler(window.App.user);
 //    //if (window.App.user && window.App.user.id == '55') {
@@ -30,7 +34,7 @@ window.flash = function (message, level = 'success') {
 //}
 
 ////now allowing named authorizations :
-let authorizations = require('./authorizations');
+let authorizations = require('./authorizations'); //old commen-js syntax for requiring modules
 
 //Vue.prototype.authorize = function (fn, ...rest) {
 Vue.prototype.authorize = function (...params) { //params: could be a callback, or a string
@@ -57,8 +61,11 @@ Vue.component('flash', require('./components/Flash.vue'));
 Vue.component('paginator', require('./components/Paginator.vue'));
 Vue.component('user-notifications', require('./components/UserNotifications.vue'));
 Vue.component('avatar-form', require('./components/AvatarForm.vue'));
+Vue.component('wysiwyg', require('./components/Wysiwyg.vue')); //global component, instead of a single-level component (like importing in Thread.vue)
 
 Vue.component('thread-view', require('./pages/Thread.vue'));
+
+Vue.config.ignoredElements = ['trix-editor']
 
 const app = new Vue({
     el: '#app'

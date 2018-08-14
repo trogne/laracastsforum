@@ -17,7 +17,8 @@
             <div v-if="editing">
                 <form @submit.prevent="update">
                     <div class="form-group">
-                        <textarea @keydown.enter.prevent @keyup.enter.prevent="update" id="sako" class="form-control" v-model="body" required></textarea>  <!--pas besoin de @{{ body }}  , et attention v-body != v-text  -->
+                        <!--<textarea @keydown.enter.prevent @keyup.enter.prevent="update" id="sako" class="form-control" v-model="body" required></textarea>-->  <!--pas besoin de @{{ body }}  , et attention v-body != v-text  -->
+                        <wysiwyg v-model="body"></wysiwyg>
                     </div>
                     <!--<button id="miko" class="btn btn-xs btn-primary" @click="update">Update</button>-->
                     <button class="btn btn-xs btn-primary">Update</button>
@@ -30,7 +31,8 @@
         <!--<div class="panel-footer level" v-if="canUpdate">  -->   <!--WAS TRYING  can-update on <replies> in show.blade -->
         <!--<div class="panel-footer level" v-if="data.user_id == window.app.user.id">-->  <!-- non, peu pas utiliser window ici -->
         <!--<div class="panel-footer level" v-if="(user && this.data.user_id == user.id)">-->
-        <div class="panel-footer level" v-if="authorize('owns', reply) || authorize('owns', reply.thread)">
+        <!--<div class="panel-footer level" v-if="authorize('owns', reply) || authorize('owns', reply.thread)">-->
+        <div class="panel-footer level" v-if="(authorize('owns', reply) || authorize('owns', reply.thread)) && !editing">
             <!--<div v-if="canUpdate">-->
             <!--<div v-if="authorize('updateReply', reply)">-->
             <div v-if="authorize('owns', reply)">
@@ -111,7 +113,7 @@
                     .catch(error => {
                         flash(error.response.data, 'danger'); //now catching the ValidationException in app/Exception/Handler.php
                         //flash(error.response.data.errors.body[0], 'danger'); //WITHOUT try/catch
-                        this.body = this.reply.body; //back the original reply body
+                        this.body = this.reply.body; //back to the original reply body
                     });
 
                 this.editing = false;
